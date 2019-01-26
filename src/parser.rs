@@ -35,17 +35,20 @@ impl Component {
     }
 }
 
+// Checks if character is an operator
 fn is_operator(c: &char) -> bool {
     match c {
-        '+' | '-' | '*' | '/' | '%' | '^' | '(' | ')' => true,
+        '+' | '-' | '*' | '/' | '%' | '^' => true,
         _ => false
     }
 }
 
+// Checks if character is a floating point digit
 fn is_digit(c: &char) -> bool {
     (*c >= '0' && *c <= '9') || *c == '.'
 }
 
+// Get precedence (importance) of an operator
 fn get_precedence(c: Option<&char>) -> i8 {
     match c {
         Some(c) => match c {
@@ -61,9 +64,10 @@ fn get_precedence(c: Option<&char>) -> i8 {
     }
 }
 
+// Parses a component out of a peekable iterator of characters
 fn parse_component(chars: &mut Peekable<Chars>) -> Component {
     let mut maybe_num = String::new();
-    
+
     while let Some(c) = chars.peek() {
         if is_digit(c) { maybe_num.push(*c); }
         else if !maybe_num.is_empty() { break; }
@@ -75,22 +79,26 @@ fn parse_component(chars: &mut Peekable<Chars>) -> Component {
     Component::End
 }
 
+// Parses a binary component (right applied by operator to left)
 fn parse_binary(chars: &mut Peekable<Chars>, prev_prec: i8, left: Component) -> Component {
     let mut left = left;
     loop {
-        while let Some(c) = chars.peek() {
-            if is_operator(c) { break; }
-            chars.next();
-        }
+        // Skips current character if it is not an operator
+        if let Some(c) = chars.peek() { if !is_operator(c) { chars.next(); } }
+
         let c = chars.peek();
+        // Gets precedence of current operator
         let prec = get_precedence(c);
 
+        // If current operator is less important than the previous one, return the previous component
         if prec < prev_prec { return left; }
 
         let c = *c.unwrap();
         let mut right = parse_component(chars);
 
         let new_prec = get_precedence(chars.peek());
+
+        // Create new binary component if current operator precedence is higher than the previous one
         if prec < new_prec {
             right = parse_binary(chars, prec + 1, right);
             if let Component::End = right { return Component::End }
@@ -100,9 +108,13 @@ fn parse_binary(chars: &mut Peekable<Chars>, prev_prec: i8, left: Component) -> 
     }
 }
 
-pub fn parse(chars_raw: &mut Peekable<Chars>) -> Component {
-    let string = chars_raw.filter(|x| x != &' ').collect::<String>();
+// Parses component from an equation in string form
+pub fn parse(raw: &String) -> Component {
+    // Removes all spaces from string
+    let string = raw.chars().filter(|x| x != &' ').collect::<String>();
+
     let mut chars = string.chars().peekable();
+    
     let left = parse_component(&mut chars);
     parse_binary(&mut chars, 0, left)
 }
