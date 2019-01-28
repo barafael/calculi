@@ -109,7 +109,7 @@ fn parse_binary(chars: &mut Peekable<Chars>, prev_prec: i8, left: Component) -> 
 }
 
 // Parses component from an equation in string form
-pub fn parse(raw: &String) -> Component {
+pub fn parse(raw: &str) -> Component {
     // Removes all spaces from string
     let string = raw.chars().filter(|x| x != &' ').collect::<String>();
 
