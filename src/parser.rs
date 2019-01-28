@@ -1,5 +1,6 @@
 use std::str::Chars;
 use std::iter::Peekable;
+use std::fmt;
 
 #[derive(Debug)]
 pub enum Component {
@@ -13,19 +14,21 @@ pub enum Component {
     End
 }
 
-impl Component {
+impl fmt::Display for Component {
     // Converts component to a readable text
-    pub fn to_text(&self) -> String {
-        match self {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str(&match self {
             Component::Variable(c) => c.to_string(),
             Component::Number(f) => f.to_string(),
             Component::Binary { operator, left, right } => {
-                format!("{} {} {}", left.to_text(), operator, right.to_text())
+                format!("{} {} {}", left.to_string(), operator, right.to_string())
             },
             _ => String::from("")
-        }
+        })
     }
+}
 
+impl Component {
     // Tries to convert the component to a float if it is a number
     pub fn to_float(&self) -> Option<f32> {
         match self {
