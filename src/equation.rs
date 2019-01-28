@@ -81,12 +81,10 @@ impl Equation {
                         // Return the correct syntax in a binary component
                         return if sum == 0.0 && var != ' ' {
                             Component::Variable(var)
+                        } else if pos_left {
+                            Component::Binary { operator: if sum < 0.0 { '-' } else { '+' }, left: Box::new(Component::Variable(var)), right: Box::new(Component::Number(sum.abs())) }
                         } else {
-                            if pos_left {
-                                Component::Binary { operator: if sum < 0.0 { '-' } else { '+' }, left: Box::new(Component::Variable(var)), right: Box::new(Component::Number(sum.abs())) }
-                            } else {
-                                Component::Binary { operator: if sum < 0.0 { '-' } else { '+' }, left: Box::new(Component::Number(sum.abs())), right: Box::new(Component::Variable(var)) }
-                            }
+                            Component::Binary { operator: if sum < 0.0 { '-' } else { '+' }, left: Box::new(Component::Number(sum.abs())), right: Box::new(Component::Variable(var)) }
                         }
                     }
                 }
@@ -155,7 +153,7 @@ impl Equation {
                         _ => outcome
                     })
                 } else {
-                    (Component::Binary { operator: operator, left: Box::new(*left), right: Box::new(*right) }, outcome)
+                    (Component::Binary { operator, left: Box::new(*left), right: Box::new(*right) }, outcome)
                 }
             },
             _ => (Component::End, 0.0)
@@ -176,7 +174,7 @@ impl Equation {
         let mut expr = Self::solve(self.solve_with(vars), outcome);
 
         // Attempt to apply algebra while a binary component appears
-        while let Component::Binary { operator: _, left: _, right: _ } = &expr.0 {
+        while let Component::Binary { .. } = &expr.0 {
             expr = Self::solve(expr.0, expr.1);
         }
 

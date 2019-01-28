@@ -39,7 +39,7 @@ impl Component {
 }
 
 // Checks if character is an operator
-fn is_operator(c: &char) -> bool {
+fn is_operator(c: char) -> bool {
     match c {
         '+' | '-' | '*' | '/' | '%' | '^' => true,
         _ => false
@@ -47,8 +47,8 @@ fn is_operator(c: &char) -> bool {
 }
 
 // Checks if character is a floating point digit
-fn is_digit(c: &char) -> bool {
-    (*c >= '0' && *c <= '9') || *c == '.'
+fn is_digit(c: char) -> bool {
+    (c >= '0' && c <= '9') || c == '.'
 }
 
 // Get precedence (importance) of an operator
@@ -72,9 +72,9 @@ fn parse_component(chars: &mut Peekable<Chars>) -> Component {
     let mut maybe_num = String::new();
 
     while let Some(c) = chars.peek() {
-        if is_digit(c) { maybe_num.push(*c); }
+        if is_digit(*c) { maybe_num.push(*c); }
         else if !maybe_num.is_empty() { break; }
-        else if !is_operator(c) { return Component::Variable(*c); }
+        else if !is_operator(*c) { return Component::Variable(*c); }
         chars.next();
     }
 
@@ -87,7 +87,7 @@ fn parse_binary(chars: &mut Peekable<Chars>, prev_prec: i8, left: Component) -> 
     let mut left = left;
     loop {
         // Skips current character if it is not an operator
-        if let Some(c) = chars.peek() { if !is_operator(c) { chars.next(); } }
+        if let Some(c) = chars.peek() { if !is_operator(*c) { chars.next(); } }
 
         let c = chars.peek();
         // Gets precedence of current operator
